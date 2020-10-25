@@ -1,4 +1,4 @@
-module github.com/kalafut/jpl
+module github.com/kalafut/mu
 
 go 1.13
 
