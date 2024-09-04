@@ -8,13 +8,13 @@ import (
 )
 
 func TestNewExpLRU(t *testing.T) {
-	cache := NewExpLRU[string, int]().TTL(time.Minute)
+	cache := NewCache[string, int]().TTL(time.Minute)
 	assert.NotNil(t, cache, "NewExpLRU should not return nil")
 	assert.Equal(t, time.Minute, cache.ttl, "Expiration time should be 1 minute")
 }
 
 func TestExpLRU_Add(t *testing.T) {
-	cache := NewExpLRU[string, int]()
+	cache := NewCache[string, int]()
 	cache.Add("key", 42)
 
 	val, ok := cache.Get("key")
@@ -23,7 +23,7 @@ func TestExpLRU_Add(t *testing.T) {
 }
 
 func TestExpLRU_Get_Expired(t *testing.T) {
-	cache := NewExpLRU[string, int]().TTL(time.Millisecond)
+	cache := NewCache[string, int]().TTL(time.Millisecond)
 	cache.Add("key", 42)
 
 	time.Sleep(2 * time.Millisecond)
@@ -33,14 +33,14 @@ func TestExpLRU_Get_Expired(t *testing.T) {
 }
 
 func TestExpLRU_Get_NotFound(t *testing.T) {
-	cache := NewExpLRU[string, int]()
+	cache := NewCache[string, int]()
 
 	_, ok := cache.Get("non-existent")
 	assert.False(t, ok, "Should not retrieve non-existent value")
 }
 
 func TestExpLRU_Eviction(t *testing.T) {
-	cache := NewExpLRU[int, int]().Cap(10).TTL(100 * time.Millisecond)
+	cache := NewCache[int, int]().Cap(10).TTL(100 * time.Millisecond)
 
 	// Fill cache
 	for i := 0; i < 10; i++ {
@@ -65,7 +65,7 @@ func TestExpLRU_Eviction(t *testing.T) {
 }
 
 func TestExpLRU_Concurrent(t *testing.T) {
-	cache := NewExpLRU[int, int]().Cap(100)
+	cache := NewCache[int, int]().Cap(100)
 	done := make(chan bool)
 
 	for i := 0; i < 10; i++ {
@@ -94,7 +94,7 @@ func TestExpLRU_Concurrent(t *testing.T) {
 func TestKeepAlive(t *testing.T) {
 	// Test with KeepAlive set to false (default behavior)
 	t.Run("KeepAlive false", func(t *testing.T) {
-		cache := NewExpLRU[string, int]().
+		cache := NewCache[string, int]().
 			TTL(100 * time.Millisecond)
 
 		cache.Add("key", 42)
@@ -122,7 +122,7 @@ func TestKeepAlive(t *testing.T) {
 
 	// Test with KeepAlive set to true
 	t.Run("KeepAlive true", func(t *testing.T) {
-		cache := NewExpLRU[string, int]().
+		cache := NewCache[string, int]().
 			TTL(100 * time.Millisecond).
 			KeepAlive(true)
 

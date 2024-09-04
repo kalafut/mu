@@ -21,7 +21,7 @@ type entry[K comparable, V any] struct {
 	expiration time.Time
 }
 
-func NewExpLRU[K comparable, V any]() *Cache[K, V] {
+func NewCache[K comparable, V any]() *Cache[K, V] {
 	return &Cache[K, V]{
 		cache: make(map[K]*entry[K, V], defaultCap),
 		ttl:   defaultTTL,
