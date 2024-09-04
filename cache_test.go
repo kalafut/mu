@@ -157,3 +157,77 @@ func TestKeepAlive(t *testing.T) {
 		assert.False(t, ok, "Expected key to be expired")
 	})
 }
+
+func TestExpLRU_Remove(t *testing.T) {
+	cache := NewCache[string, int]()
+
+	// Add some items
+	cache.Add("key1", 1)
+	cache.Add("key2", 2)
+	cache.Add("key3", 3)
+
+	// Remove an existing key
+	cache.Remove("key2")
+
+	// Check that the removed key is no longer in the cache
+	_, ok := cache.Get("key2")
+	assert.False(t, ok, "Key 'key2' should have been removed")
+
+	// Check that other keys are still present
+	val1, ok := cache.Get("key1")
+	assert.True(t, ok, "Key 'key1' should still be in the cache")
+	assert.Equal(t, 1, val1, "Value for 'key1' should be 1")
+
+	val3, ok := cache.Get("key3")
+	assert.True(t, ok, "Key 'key3' should still be in the cache")
+	assert.Equal(t, 3, val3, "Value for 'key3' should be 3")
+
+	// Try to remove a non-existent key (should not cause any errors)
+	cache.Remove("non-existent")
+}
+
+func TestExpLRU_Clear(t *testing.T) {
+	cache := NewCache[string, int]()
+
+	// Add some items
+	cache.Add("key1", 1)
+	cache.Add("key2", 2)
+	cache.Add("key3", 3)
+
+	// Clear the cache
+	cache.Clear()
+
+	// Check that all keys have been removed
+	_, ok1 := cache.Get("key1")
+	assert.False(t, ok1, "Key 'key1' should have been removed")
+
+	_, ok2 := cache.Get("key2")
+	assert.False(t, ok2, "Key 'key2' should have been removed")
+
+	_, ok3 := cache.Get("key3")
+	assert.False(t, ok3, "Key 'key3' should have been removed")
+
+	// Add a new item after clearing to ensure the cache is still functional
+	cache.Add("new-key", 42)
+	val, ok := cache.Get("new-key")
+	assert.True(t, ok, "Should be able to add and retrieve a new item after clearing")
+	assert.Equal(t, 42, val, "New value should be retrievable after clearing")
+}
+
+func TestExpLRU_RemoveAndAdd(t *testing.T) {
+	cache := NewCache[string, int]()
+
+	// Add an item
+	cache.Add("key", 1)
+
+	// Remove the item
+	cache.Remove("key")
+
+	// Add the same key with a different value
+	cache.Add("key", 2)
+
+	// Check that the new value is present
+	val, ok := cache.Get("key")
+	assert.True(t, ok, "Key should be present after removing and re-adding")
+	assert.Equal(t, 2, val, "New value should be retrieved after removing and re-adding")
+}

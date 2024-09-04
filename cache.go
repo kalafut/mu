@@ -39,9 +39,21 @@ func (c *Cache[K, V]) TTL(ttl time.Duration) *Cache[K, V] {
 	return c
 }
 
-func (c *Cache[K, V]) KeepAlive(ka bool) *Cache[K, V] {
-	c.keepAlive = ka
+func (c *Cache[K, V]) KeepAlive(keepAlive bool) *Cache[K, V] {
+	c.keepAlive = keepAlive
 	return c
+}
+
+func (c *Cache[K, V]) Remove(key K) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	delete(c.cache, key)
+}
+
+func (c *Cache[K, V]) Clear() {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	clear(c.cache)
 }
 
 func (c *Cache[K, V]) ensureCapacity() {
